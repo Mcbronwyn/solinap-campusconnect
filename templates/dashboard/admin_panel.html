@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Admin Panel</h2>
-<p>Total Registered Members: {{ member_count }}</p>
+<div class="card border-warning shadow-sm">
+    <div class="card-header bg-warning text-dark">
+        <h3 class="mb-0">Admin Panel</h3>
+    </div>
+    <div class="card-body">
+        <p class="lead">System-wide Member Statistics</p>
+        <p class="fs-5">Total Registered Accounts: <strong>{{ member_count }}</strong></p>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-dark">Back to Dashboard</a>
+    </div>
+</div>
 {% endblock %}

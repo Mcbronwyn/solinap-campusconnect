@@ -1,17 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2> Welcome, {{ user.first_name|default:user.username}}!</h2>
-<ul>
-    <li> Role: {{ user.get_role_display }}</li>
-    <li> Course: {{user.course|default:"Not Set" }}</li>
-    <li> Members: {{ member_count }} </li>
-    <li> Last Login: {{ user.last_login|date:"M d, Y" }} </li>
-</ul>
-
-{% if is_admin %}
-<a href="{% url 'admin_panel' %}">Open admin panel</a>
-{% endif %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">Welcome, {{ user.first_name|default:user.username }}!</h3>
+    </div>
+    <div class="card-body">
+        <ul class="list-group list-group-flush mb-3">
+            <li class="list-group-item"><strong>Role:</strong> {{ user.get_role_display }}</li>
+            <li class="list-group-item"><strong>Course:</strong> {{ user.course|default:"Not Set" }}</li>
+            <li class="list-group-item"><strong>Total Members:</strong> <span class="badge bg-secondary">{{ member_count }}</span></li>
+            <li class="list-group-item"><strong>Last Login:</strong> {{ user.last_login|date:"M d, Y" }}</li>
+        </ul>
+        {% if is_admin %}
+            <a href="{% url 'admin_panel' %}" class="btn btn-warning">Open Admin Panel</a>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}
-
-
