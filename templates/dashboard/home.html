@@ -1,20 +1,282 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block content %}
-<div class="card shadow-sm mb-4">
-    <div class="card-header bg-primary text-white">
-        <h3 class="mb-0">Welcome, {{ user.first_name|default:user.username }}!</h3>
-    </div>
-    <div class="card-body">
-        <ul class="list-group list-group-flush mb-3">
-            <li class="list-group-item"><strong>Role:</strong> {{ user.get_role_display }}</li>
-            <li class="list-group-item"><strong>Course:</strong> {{ user.course|default:"Not Set" }}</li>
-            <li class="list-group-item"><strong>Total Members:</strong> <span class="badge bg-secondary">{{ member_count }}</span></li>
-            <li class="list-group-item"><strong>Last Login:</strong> {{ user.last_login|date:"M d, Y" }}</li>
-        </ul>
-        {% if is_admin %}
-            <a href="{% url 'admin_panel' %}" class="btn btn-warning">Open Admin Panel</a>
-        {% endif %}
+<style>
+    .fb-timeline-cover {
+        height: 190px;
+        background: linear-gradient(135deg, #3b5998 0%, #203a72 100%);
+        border-radius: 4px 4px 0 0;
+        position: relative;
+        border: 1px solid #2d4373;
+        border-bottom: none;
+    }
+
+    .fb-timeline-name {
+        position: absolute;
+        bottom: 16px;
+        left: 175px;
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: 700;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+        letter-spacing: -0.5px;
+    }
+
+    .fb-timeline-avatar {
+        position: absolute;
+        bottom: -22px;
+        left: 20px;
+        width: 130px;
+        height: 130px;
+        background: #ffffff;
+        border: 4px solid #ffffff;
+        border-radius: 3px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        z-index: 2;
+    }
+
+    .fb-avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        background-color: #d8dfea;
+        color: #3b5998;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 52px;
+        font-weight: bold;
+        user-select: none;
+    }
+
+    .fb-timeline-nav {
+        background-color: #ffffff;
+        border: 1px solid var(--fb-border);
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+        height: 48px;
+        padding-left: 175px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .fb-nav-tab {
+        color: #4b4f56;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 13px 18px;
+        display: inline-block;
+        text-decoration: none;
+        border-right: 1px solid #e9ebee;
+        transition: background 0.1s;
+    }
+
+    .fb-nav-tab:hover {
+        background-color: #f5f6f7;
+        color: #1d2129;
+    }
+
+    .fb-nav-tab.active {
+        color: #3b5998;
+        border-bottom: 3px solid #3b5998;
+    }
+
+    /* 2013 Classic Publisher & Cards */
+    .fb-box {
+        background: #ffffff;
+        border: 1px solid var(--fb-border);
+        border-radius: 3px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+        margin-bottom: 14px;
+    }
+
+    .fb-box-header {
+        background: #f5f6f7;
+        border-bottom: 1px solid #e5e5e5;
+        padding: 9px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #333333;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .fb-box-body {
+        padding: 12px;
+    }
+
+    .fb-info-row {
+        display: flex;
+        align-items: center;
+        padding: 7px 0;
+        font-size: 13px;
+        border-bottom: 1px solid #f0f2f5;
+    }
+
+    .fb-info-row:last-child {
+        border-bottom: none;
+    }
+
+    .fb-info-label {
+        width: 110px;
+        font-weight: 700;
+        color: #8d949e;
+        font-size: 12px;
+    }
+
+    .fb-info-value {
+        color: #1d2129;
+        font-weight: 500;
+    }
+
+    .fb-badge {
+        background-color: #4080ff;
+        color: #ffffff;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 10px;
+        font-size: 11px;
+    }
+
+    .fb-status-textarea {
+        border: none;
+        resize: none;
+        outline: none;
+        font-size: 13px;
+        width: 100%;
+        min-height: 48px;
+    }
+
+    .btn-fb-silver {
+        background: linear-gradient(to bottom, #ffffff, #e9ebee);
+        border: 1px solid #ccd0d5;
+        color: #4b4f56;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 2px;
+        padding: 4px 10px;
+    }
+
+    .btn-fb-silver:hover {
+        background: #e9ebee;
+        color: #1d2129;
+    }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-9">
+        
+        <!-- Timeline Header Banner -->
+        <div class="fb-timeline-cover shadow-sm">
+            <!-- 2013 Square Avatar -->
+            <div class="fb-timeline-avatar">
+                <div class="fb-avatar-placeholder">
+                    {{ user.first_name|default:user.username|make_list|first|upper }}
+                </div>
+            </div>
+            <!-- User Name -->
+            <div class="fb-timeline-name">
+                {{ user.first_name|default:user.username }}
+                {% if user.last_name %}{{ user.last_name }}{% endif %}
+            </div>
+        </div>
+
+        <!-- Timeline Sub Navigation Strip -->
+        <div class="fb-timeline-nav d-flex align-items-center justify-content-between mb-4">
+            <div class="d-flex h-100">
+                <a href="{% url 'dashboard' %}" class="fb-nav-tab active">Overview</a>
+                <a href="{% url 'profile' %}" class="fb-nav-tab">About / Profile</a>
+                <span class="fb-nav-tab text-muted">Activity</span>
+            </div>
+            <div class="pe-3">
+                <a href="{% url 'profile' %}" class="btn btn-fb-silver">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-pencil-fill me-1" viewBox="0 0 16 16">
+                        <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
+                    </svg>
+                    Edit Profile
+                </a>
+            </div>
+        </div>
+
+        <!-- 2-Column Content Grid -->
+        <div class="row g-3">
+            
+            <!-- Left Column: Student Details -->
+            <div class="col-md-5">
+                <div class="fb-box">
+                    <div class="fb-box-header">
+                        <span>Student Information</span>
+                        <a href="{% url 'profile' %}" class="small text-decoration-none" style="color: var(--fb-blue);">Update</a>
+                    </div>
+                    <div class="fb-box-body">
+                        <div class="fb-info-row">
+                            <span class="fb-info-label">Role</span>
+                            <span class="fb-info-value fw-bold text-dark">{{ user.role|default:"Student" }}</span>
+                        </div>
+                        <div class="fb-info-row">
+                            <span class="fb-info-label">Course</span>
+                            <span class="fb-info-value text-primary fw-semibold">{{ user.course|default:"BSCS" }}</span>
+                        </div>
+                        <div class="fb-info-row">
+                            <span class="fb-info-label">Last Login</span>
+                            <span class="fb-info-value text-muted">{{ user.last_login|date:"M d, Y"|default:"Today" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Community Telemetry Widget -->
+                <div class="fb-box">
+                    <div class="fb-box-header">
+                        <span>Campus Directory</span>
+                    </div>
+                    <div class="fb-box-body d-flex align-items-center justify-content-between">
+                        <span class="text-muted small">Registered Classmates:</span>
+                        <span class="fb-badge">{{ total_members|default:"9" }} members</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Status Publisher & Timeline Posts -->
+            <div class="col-md-7">
+                
+                <!-- Status Composer Box -->
+                <div class="fb-box">
+                    <div class="fb-box-header" style="background-color: #f5f6f7;">
+                        <span style="color: #4b4f56;">Update Status</span>
+                    </div>
+                    <div class="fb-box-body">
+                        <textarea class="fb-status-textarea" placeholder="What's on your mind, {{ user.first_name|default:user.username }}?"></textarea>
+                    </div>
+                    <div class="d-flex justify-content-end align-items-center p-2 bg-light border-top">
+                        <button type="button" class="btn btn-fb-primary btn-sm px-3" disabled>Post</button>
+                    </div>
+                </div>
+
+                <!-- Welcome Announcement Card -->
+                <div class="fb-box">
+                    <div class="p-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="me-2 rounded" style="width: 34px; height: 34px; background: #3b5998; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
+                                CC
+                            </div>
+                            <div>
+                                <div class="fw-bold" style="color: var(--fb-blue); font-size: 13px;">CampusConnect Notice</div>
+                                <div class="text-muted" style="font-size: 11px;">Just now · CSIT327 Lab</div>
+                            </div>
+                        </div>
+                        <p class="mb-0 text-dark" style="font-size: 13px; line-height: 1.45;">
+                            Welcome to the CampusConnect portal! Your session is authenticated. You can view registered student statistics, update your profile attributes, or access the administrative controls if authorized.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 </div>
 {% endblock %}

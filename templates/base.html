@@ -3,40 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusConnect</title>
+    <title>{% block title %}CampusConnect{% endblock %}</title>
     <!-- Bootstrap 5 CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+    <style>
+        :root {
+            --fb-blue: #3b5998;
+            --fb-dark-blue: #2d4373;
+            --fb-light-blue: #4e69a2;
+            --fb-bg: #e9ebee;
+            --fb-border: #ccd0d5;
+            --fb-green: #42b72a;
+            --fb-green-hover: #36a420;
+            --fb-text-dark: #1d2129;
+            --fb-text-muted: #606770;
+        }
 
-    <!-- Bootstrap Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3 mb-4">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="{% url 'dashboard' %}">CampusConnect</a>
-            <div class="d-flex align-items-center gap-2">
+        body {
+            background-color: var(--fb-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Lucida Grande", Tahoma, sans-serif;
+            font-size: 13px;
+            color: var(--fb-text-dark);
+        }
+
+        /* 2013 Facebook Top Bar */
+        .fb-navbar {
+            background-color: var(--fb-blue);
+            border-bottom: 1px solid var(--fb-dark-blue);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            min-height: 44px;
+            padding: 4px 0;
+        }
+
+        .fb-brand {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.6px;
+            color: #ffffff !important;
+            text-decoration: none;
+        }
+
+        /* Facebook Card Containers */
+        .fb-card {
+            background: #ffffff;
+            border: 1px solid var(--fb-border);
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .fb-card-header {
+            background-color: #f5f6f7;
+            border-bottom: 1px solid var(--fb-border);
+            padding: 10px 16px;
+            font-weight: 700;
+            font-size: 14px;
+            color: #333333;
+        }
+
+        /* Inputs */
+        .form-control, .form-select {
+            font-size: 13px;
+            border: 1px solid #bdc7d8;
+            border-radius: 3px;
+            padding: 6px 10px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #3b5998;
+            box-shadow: 0 0 0 2px rgba(59, 89, 152, 0.2);
+        }
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--fb-text-muted);
+            margin-bottom: 4px;
+        }
+
+        /* Buttons */
+        .btn-fb-primary {
+            background-color: var(--fb-blue);
+            border-color: var(--fb-dark-blue);
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 13px;
+            border-radius: 3px;
+        }
+
+        .btn-fb-primary:hover {
+            background-color: #314b82;
+            border-color: #1f3054;
+            color: #ffffff;
+        }
+
+        .btn-fb-green {
+            background-color: var(--fb-green);
+            border-color: #36a420;
+            color: #ffffff;
+            font-weight: 700;
+            border-radius: 4px;
+        }
+
+        .btn-fb-green:hover {
+            background-color: var(--fb-green-hover);
+            border-color: #2b841a;
+            color: #ffffff;
+        }
+
+        .btn-fb-secondary {
+            background-color: #f5f6f7;
+            border: 1px solid #ccd0d5;
+            color: #4b4f56;
+            font-weight: 600;
+            font-size: 13px;
+            border-radius: 3px;
+        }
+
+        .btn-fb-secondary:hover {
+            background-color: #ebedf0;
+            color: #1d2129;
+        }
+
+        /* Alerts */
+        .alert {
+            font-size: 13px;
+            border-radius: 3px;
+            border-width: 1px;
+            padding: 10px 14px;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- 2013 Facebook Top Navbar -->
+    <header class="fb-navbar">
+        <div class="container d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+                <a class="fb-brand" href="{% url 'dashboard' %}">CampusConnect</a>
+            </div>
+
+            <nav class="d-flex align-items-center gap-2">
                 {% if user.is_authenticated %}
-                    <span class="text-light me-2">Hi, <strong>{{ user.username }}</strong>!</span>
-                    <a href="{% url 'profile' %}" class="btn btn-outline-light btn-sm">Edit Profile</a>
+                    <span class="text-white me-2">Hi, <strong>{{ user.first_name|default:user.username }}</strong></span>
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm py-1 px-2">Home</a>
+                    <a href="{% url 'profile' %}" class="btn btn-outline-light btn-sm py-1 px-2">Settings</a>
                     {% if user.role == "ADMIN" %}
-                        <a href="{% url 'admin_panel' %}" class="btn btn-warning btn-sm">Admin Panel</a>
+                        <a href="{% url 'admin_panel' %}" class="btn btn-warning btn-sm py-1 px-2">Admin Panel</a>
                     {% endif %}
-                    <form method="post" action="{% url 'logout' %}" class="d-inline">
+                    <form method="post" action="{% url 'logout' %}" class="d-inline ms-1">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm">Log out</button>
+                        <button type="submit" class="btn btn-dark btn-sm py-1 px-2 border-secondary">Log out</button>
                     </form>
                 {% else %}
-                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">Log in</a>
-                    <a href="{% url 'signup' %}" class="btn btn-primary btn-sm">Sign up</a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm py-1 px-3">Log in</a>
+                    <a href="{% url 'signup' %}" class="btn btn-fb-green btn-sm py-1 px-3">Sign up</a>
                 {% endif %}
-            </div>
+            </nav>
         </div>
-    </nav>
+    </header>
 
-    <!-- Success / Error Feedback Alerts -->
-    <div class="container">
+    <!-- Feedback Alerts -->
+    <div class="container mt-3">
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
                     {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
@@ -44,11 +174,19 @@
         {% endif %}
     </div>
 
-    <!-- Main Content Body -->
-    <main class="container mb-5">
+    <!-- Main Content Area -->
+    <main class="container my-4 flex-grow-1">
         {% block content %}
         {% endblock %}
     </main>
+
+    <!-- Footer -->
+    <footer class="container text-muted small py-3 mt-auto border-top">
+        <div class="d-flex justify-content-between">
+            <span>CampusConnect &copy; 2013 · English (US)</span>
+            <span>CSIT327 Web Development Lab</span>
+        </div>
+    </footer>
 
     <!-- Bootstrap 5 JS Bundle CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
